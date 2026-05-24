@@ -18,7 +18,7 @@ agentmd.bat      # Windows shim → py ai_cmd.py %*
 agentmd          # POSIX shim
 install.bat      # Windows installer (copies shim to %USERPROFILE%\.local\bin\)
 README.md        # user-facing docs (English)
-version.md       # changelog
+CHANGELOG.md     # changelog
 LICENSE          # MIT
 examples/        # sample inputs/outputs
 ```
@@ -78,6 +78,6 @@ known sharp edge to fix.
 
 ## Releasing
 
-1. Bump version in `version.md`.
+1. Bump version in `CHANGELOG.md`.
 2. Tag: `git tag v0.x.y && git push --tags`.
-3. (Optional) GitHub release with changelog from `version.md`.
+3. (Optional) GitHub release with changelog from `CHANGELOG.md`.
