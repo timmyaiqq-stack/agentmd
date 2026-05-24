@@ -1,0 +1,77 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Lint (ruff + stdlib-only check)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install ruff
+        run: pip install ruff==0.7.4
+
+      - name: Ruff check
+        run: ruff check ai_cmd.py tests/
+
+      - name: Ruff format check
+        run: ruff format --check ai_cmd.py tests/
+
+      - name: Stdlib-only invariant
+        shell: bash
+        run: |
+          # ai_cmd.py must not import any third-party module.
+          # Allowed: anything that ships with CPython.
+          python - <<'PY'
+          import ast, sys
+          tree = ast.parse(open("ai_cmd.py", encoding="utf-8").read())
+          third_party = []
+          stdlib = set(sys.stdlib_module_names)
+          for node in ast.walk(tree):
+              if isinstance(node, ast.Import):
+                  for alias in node.names:
+                      root = alias.name.split(".")[0]
+                      if root not in stdlib:
+                          third_party.append(root)
+              elif isinstance(node, ast.ImportFrom):
+                  if node.module:
+                      root = node.module.split(".")[0]
+                      if root not in stdlib and node.level == 0:
+                          third_party.append(root)
+          if third_party:
+              print(f"FAIL: ai_cmd.py imports non-stdlib modules: {sorted(set(third_party))}")
+              sys.exit(1)
+          print("OK: ai_cmd.py is stdlib-only.")
+          PY
+
+  test:
+    name: Smoke test (${{ matrix.os }} / py${{ matrix.python }})
+    needs: lint
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python: ["3.9", "3.12"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Run smoke tests
+        run: python -m unittest tests.test_smoke -v

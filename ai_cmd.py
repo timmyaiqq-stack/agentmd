@@ -15,6 +15,7 @@ Backend: shells out to the local `claude` CLI (`claude -p`). No API key needed
 when you're already logged in via Claude Code. Override the binary path with
 AI_CMD_CLAUDE_PATH and the subprocess timeout with AI_CMD_TIMEOUT.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -52,7 +53,7 @@ AGENTS = {
             "Output exactly this shape (no extra commentary, no code fences):\n"
             "  ---\n"
             "  description: <one-line summary>\n"
-            "  globs: [\"**/*\"]\n"
+            '  globs: ["**/*"]\n'
             "  alwaysApply: false\n"
             "  ---\n"
             "  <rule body in markdown>"
@@ -65,7 +66,7 @@ AGENTS = {
             "You are generating a GitHub Copilot custom-instruction markdown file.\n"
             "Output exactly this shape (no extra commentary, no code fences):\n"
             "  ---\n"
-            "  applyTo: \"**/*\"\n"
+            '  applyTo: "**/*"\n'
             "  ---\n"
             "  # <title>\n"
             "\n"
@@ -125,7 +126,8 @@ def slugify(text: str, max_len: int = 50) -> str:
     """
     text = text.strip()
     text = unicodedata.normalize("NFKC", text)
-    text = re.sub(r"[\\/:*?\"<>|\r\n\t]+", "", text)
+    # Strip Windows-illegal filename chars (whitespace stays — handled next).
+    text = re.sub(r'[\\/:*?"<>|]+', "", text)
     text = re.sub(r"\s+", "-", text)
     text = text.strip("-._")
     if len(text) > max_len:
@@ -218,7 +220,9 @@ def cmd_new(args: argparse.Namespace) -> int:
         print(f"  -> {out_path}", file=sys.stderr)
 
     if args.json:
-        print(json.dumps({"slug": slug, "results": results}, ensure_ascii=False, indent=2))
+        print(
+            json.dumps({"slug": slug, "results": results}, ensure_ascii=False, indent=2)
+        )
     elif not results:
         return 1
     return 0
@@ -301,7 +305,9 @@ def cmd_show(args: argparse.Namespace) -> int:
 
 class _Handler(BaseHTTPRequestHandler):
     def log_message(self, fmt, *a):
-        sys.stderr.write(f"[agentmd serve] {self.address_string()} - " + (fmt % a) + "\n")
+        sys.stderr.write(
+            f"[agentmd serve] {self.address_string()} - " + (fmt % a) + "\n"
+        )
 
     def _send(self, code: int, body: dict) -> None:
         data = json.dumps(body, ensure_ascii=False).encode("utf-8")
@@ -331,7 +337,9 @@ class _Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         length = int(self.headers.get("Content-Length", "0"))
         try:
-            payload = json.loads(self.rfile.read(length).decode("utf-8")) if length else {}
+            payload = (
+                json.loads(self.rfile.read(length).decode("utf-8")) if length else {}
+            )
         except json.JSONDecodeError:
             self._send(400, {"error": "invalid json"})
             return
@@ -346,9 +354,7 @@ class _Handler(BaseHTTPRequestHandler):
                 self._send(400, {"error": "prompt required"})
                 return
             if agent not in AGENTS:
-                self._send(
-                    400, {"error": f"unknown agent. supported: {list(AGENTS)}"}
-                )
+                self._send(400, {"error": f"unknown agent. supported: {list(AGENTS)}"})
                 return
             slug = name or slugify(prompt[:40])
             raw = call_claude(prompt, AGENTS[agent]["guide"])
@@ -399,7 +405,9 @@ def build_parser() -> argparse.ArgumentParser:
 
     p_new = sub.add_parser("new", help="generate a new file from a description")
     p_new.add_argument("prompt", help="natural language description")
-    p_new.add_argument("--agent", choices=[*AGENTS.keys(), "all"], default="claude-code")
+    p_new.add_argument(
+        "--agent", choices=[*AGENTS.keys(), "all"], default="claude-code"
+    )
     p_new.add_argument(
         "--name", help="slug without extension (default: first 40 chars of prompt)"
     )
