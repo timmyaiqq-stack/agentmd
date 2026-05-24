@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# POSIX shim for agentmd. Place this on your PATH or symlink it.
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+exec python3 "$DIR/ai_cmd.py" "$@"

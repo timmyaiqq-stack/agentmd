@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+
+# Examples / test output
+examples/output/
+.claude/
+.cursor/
+.github/copilot/
+.codex/
+.gemini/
+.roo/
+
+# Misc
+*.log
+*.bak
