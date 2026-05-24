@@ -1,0 +1,21 @@
+---
+description: Find all TODO comments in the repo and group them by file
+globs: ["**/*"]
+alwaysApply: false
+---
+When the user asks to audit or list pending work, scan the workspace for
+`TODO`, `FIXME`, `HACK`, and `XXX` comments and report them grouped by file.
+
+Rules:
+
+- Search source files only — skip `node_modules/`, `.venv/`, `dist/`,
+  `build/`, and anything matched by `.gitignore`.
+- Case-insensitive match on the marker tokens.
+- Strip leading comment characters (`#`, `//`, `/*`, `*`) before showing
+  the comment body.
+- Group by relative file path; sort matches inside each group by line
+  number ascending.
+- Format each entry as `L<line>: <comment text>`.
+- Finish with a one-line summary: total markers and number of files
+  affected.
+- If nothing is found, say so plainly. Do not invent matches.
