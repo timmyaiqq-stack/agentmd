@@ -1,5 +1,9 @@
 # agentmd
 
+[![CI](https://github.com/timmyaiqq-stack/agentmd/actions/workflows/ci.yml/badge.svg)](https://github.com/timmyaiqq-stack/agentmd/actions/workflows/ci.yml)
+[![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+
 > Natural language → command/rule markdown for 6 AI coding agents.
 > One CLI. Zero dependencies. No API key.
 
